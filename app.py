@@ -1,33 +1,20 @@
-
 import streamlit as st
-from streamlit_drawable_canvas import st_canvas
 import numpy as np
-from tensorflow.keras.models import load_model
+import tensorflow as tf
 from PIL import Image, ImageOps
 
-# Load model
-model = load_model("mnist_cnn_model.h5")
+st.title("Handwritten Digit Recognition")
+uploaded_file = st.file_uploader("Upload a 28x28 digit image")
 
-st.title("🖌️ Handwritten Digit Recognition")
-st.write("Draw a digit (0–9) below and click 'Predict'.")
+if uploaded_file:
+    model = tf.keras.models.load_model("handwritten_model.h5")
 
-canvas_result = st_canvas(
-    fill_color="#000000",
-    stroke_width=15,
-    stroke_color="#FFFFFF",
-    background_color="#000000",
-    width=280,
-    height=280,
-    drawing_mode="freedraw",
-    key="canvas",
-)
+    image = Image.open(uploaded_file).convert("L")
+    image = ImageOps.invert(image)
+    image = image.resize((28, 28))
+    image_array = np.array(image) / 255.0
+    image_array = image_array.reshape(1, 28, 28, 1)
 
-if canvas_result.image_data is not None:
-    image = canvas_result.image_data
-    img = Image.fromarray((image[:, :, 0:1] * 255).astype(np.uint8).squeeze())
-    img = ImageOps.invert(img).resize((28, 28)).convert('L')
-    img = np.array(img).reshape(1, 28, 28, 1) / 255.0
+    prediction = model.predict(image_array)
+    st.write(f"Predicted Digit: {np.argmax(prediction)}")
 
-    if st.button("Predict"):
-        prediction = model.predict(img)
-        st.success(f"Predicted Digit: **{np.argmax(prediction)}**")
