@@ -4,18 +4,31 @@ import tensorflow as tf
 from PIL import Image, ImageOps
 
 st.title("Handwritten Digit Recognition")
-uploaded_file = st.file_uploader("Upload a 28x28 digit image")
+uploaded_file = st.file_uploader("Upload a 28x28 digit image (PNG/JPG)", type=["png", "jpg", "jpeg"])
 
-if uploaded_file:
-    model = tf.keras.models.load_model("handwritten_model.h5")
+if uploaded_file is not None:
+    # Load model only once
+    @st.cache_resource
+    def load_model():
+        return tf.keras.models.load_model("handwritten_model.h5")
 
-    image = Image.open(uploaded_file).convert("L")
-    image = ImageOps.invert(image)
-    image = image.resize((28, 28))
+    model = load_model()
+
+    # Process image
+    image = Image.open(uploaded_file).convert("L")  # Convert to grayscale
+    image = ImageOps.invert(image)                  # Invert black/white
+    image = image.resize((28, 28))                  # Resize to 28x28
+
+    # Convert to numpy and normalize
     image_array = np.array(image) / 255.0
-    image_array = image_array.reshape(1, 28, 28, 1)
+    image_array = image_array.reshape(1, 28, 28, 1)  # Add batch and channel dimension
 
+    st.image(image, caption="Uploaded Digit", width=150)
 
+    # Prediction
     prediction = model.predict(image_array)
-    st.write(f"Predicted Digit: {np.argmax(prediction)}")
+    predicted_digit = np.argmax(prediction)
+
+    st.success(f"Predicted Digit: {predicted_digit}")
+
 
