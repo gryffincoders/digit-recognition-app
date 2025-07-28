@@ -13,7 +13,8 @@ if uploaded_file:
     image = ImageOps.invert(image)
     image = image.resize((28, 28))
     image_array = np.array(image) / 255.0
-    image_array = image_array.reshape(1, 28, 28)
+    image_array = image_array.reshape(1, 28, 28, 1)
+
 
     prediction = model.predict(image_array)
     st.write(f"Predicted Digit: {np.argmax(prediction)}")
