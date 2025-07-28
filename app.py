@@ -8,7 +8,8 @@ st.title("Handwritten Digit Recognition")
 @st.cache_resource
 def load_model():
     try:
-        model = tf.keras.models.load_model("handwritten_model.h5")
+       tf.keras.models.load_model("handwritten_model.keras")
+
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
